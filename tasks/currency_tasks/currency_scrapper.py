@@ -1,47 +1,65 @@
-import os
+#  todo fix xTimes importing same module
 import requests
-
-from bs4 import BeautifulSoup
+import pickle
 from pathlib import Path
+from bs4 import BeautifulSoup
+
+import os.path
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
-class CurrencyParser:
+class CurrencyScrapper:
 
-    FILE = 'currency.txt'
-    URL = 'https://goo.gl/b4oeUz'
+    FILE = os.path.join(dir_path, 'currency.pickle')
+    URL = 'https://goo.gl/iFHWsJ'
 
     def __init__(self):
         self.html = requests.get(self.URL).text
         self.soup = BeautifulSoup(self.html, 'html.parser')
-        self.table = self.soup.find(class_='wikitable')
+        self.table = self.soup.find('table')
 
-    def collect_data(self):
-        data = list()
-        trs = self.table.find_all('tr')
+    def _collect_data(self):
+        data_ = list()
+        trs = self.table('tr')
         for tr in trs:
-            rows = tr.find_all('td')
-            row = [column.text.strip() for i, column in enumerate(rows) if i in (0, 1, 5, 6)]
-            if len(row) == 4:
-                data.append(row)
-        return data
+            data_.append([el.text for el in tr])
+        return data_
 
-    @staticmethod
-    def clear_data(data):
-        for item in data:
-            item[0] = item[0].split(u'\xa0')[0]
-            item[1] = item[1].replace('\n', ' ')
-            item[2] = item[2].replace('\n', ' ')
-        return data
+    def _get_values(self):
+        d = dict()
+        data_ = self._collect_data()
+        e_countries = set()
+        for el in data_[1:]:
+            if not el[0] == 'EUR':
+                d.update({el[0]: ', '.join(el)})
+            else:
+                e_countries.add(el[2])
+        e_countries = ', '.join(e_countries)
+        d.update({'EUR': ', '.join(('EUR', 'Euro', 'Europe', e_countries))})
+        return d
 
-    def write_data(self, data):
-        if Path(self.FILE).exists():
-            os.remove(self.FILE)
-        with open(self.FILE, 'a') as f:
-            for item in data:
-                f.write(', '.join(item) + '\n')
+    def read_data(self):
+        with open(self.FILE, 'rb') as f:
+            return pickle.load(f)
+
+    def write_data(self, data_):
+        with open(self.FILE, 'wb') as f:
+                pickle.dump(data_, f)
+
+    def get_currencies(self):
+        path = Path(self.FILE)
+        if path.exists():
+            return self.read_data()
+        else:
+            values = self._get_values()
+            self.write_data(values)
+            return values
 
 
 if __name__ == "__main__":
-    cp = CurrencyParser()
-    data = cp.collect_data()
-    cp.write_data(cp.clear_data(data))
+    cp = CurrencyScrapper()
+    data = cp.get_currencies()
+    from pprint import pprint
+    pprint(data)
+
