@@ -1,6 +1,5 @@
 import asyncio
 import json
-
 from telepot.aio.loop import MessageLoop
 from telepot.aio import Bot
 
@@ -10,7 +9,7 @@ from message_handler import ChatHandler, CallbackHandler
 
 def _get_token(file='config.txt', mode='r'):
     with open(file, mode) as f:
-        return json.load(f)
+        return json.load(f)['TOKEN']
 
 async def on_chat_message(message):
     await ChatHandler(bot, postgres_db, message).handle()
@@ -21,8 +20,7 @@ async def on_callback_query(message):
 
 
 if __name__ == '__main__':
-    TOKEN = _get_token()
-    bot = Bot(TOKEN)
+    bot = Bot(_get_token())
     postgres_db = PostgresDb()
     loop = asyncio.get_event_loop()
     loop.create_task(MessageLoop(bot, {
