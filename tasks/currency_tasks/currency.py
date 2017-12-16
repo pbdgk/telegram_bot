@@ -24,7 +24,7 @@ class Currency:
         for k in self.currencies:
             if k.startswith(key.upper()):
                 currencies.append(k)
-        return currencies[:4]
+        return list(map(lambda x: x.upper(), currencies[:4]))
 
     @staticmethod
     def get_reply(user_answers):
