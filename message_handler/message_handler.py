@@ -1,5 +1,6 @@
-from tasks.currency_tasks import Currency
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
+from logs import log_users
+from tasks.currency_tasks import Currency
 
 
 TASKS = {'/currency': Currency}
@@ -12,7 +13,7 @@ class BaseMessageHandler:
         self._db = db
         self.msg = message
 
-    def _update_session_if_exists(self):
+    def _restore_user_session(self):
         if self._get_user_session(self.msg['chat_id']):
             self._db.clear_session(self.msg['chat_id'])
         self._db.add_session(self.msg['chat_id'], self.msg['text'])
@@ -43,7 +44,7 @@ class ChatHandler(BaseMessageHandler):
             await self.send_help_message()
 
         elif self._is_command(self.msg['text']):
-            self._update_session_if_exists()
+            self._restore_user_session()
             session = self._get_user_session(self.msg['chat_id'])
             await self.do_task(*session)
         else:
@@ -102,6 +103,7 @@ class CallbackHandler(BaseMessageHandler):
                      'chat_id': value['from']['id']
                      }
 
+    @log_users
     async def handle(self):
         self._db.update_session(self.msg['chat_id'], self.msg['text'])
         _, TaskCls, user_answers, *_ = self._db.check_session(self.msg['chat_id'])
@@ -110,3 +112,10 @@ class CallbackHandler(BaseMessageHandler):
         await self._bot.sendMessage(self.msg['chat_id'], inline_query_reply)
         if end:
             self._db.clear_session(self.msg['chat_id'])
+
+
+def TestFunc():
+    X='string'
+    y=1
+    y+=1
+    print ('testing wrong pep8')
