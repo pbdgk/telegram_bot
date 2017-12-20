@@ -112,10 +112,3 @@ class CallbackHandler(BaseMessageHandler):
         await self._bot.sendMessage(self.msg['chat_id'], inline_query_reply)
         if end:
             self._db.clear_session(self.msg['chat_id'])
-
-
-def TestFunc():
-    X='string'
-    y=1
-    y+=1
-    print ('testing wrong pep8')
