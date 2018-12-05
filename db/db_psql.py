@@ -45,6 +45,3 @@ class PostgresDb:
                                     where chat_id={chat_id}""".format(var=var,
                                                                       chat_id=chat_id))
         self.conn.commit()
-
-
-

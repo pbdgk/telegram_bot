@@ -1,4 +1,3 @@
-#  todo fix xTimes importing same module
 import requests
 import pickle
 from pathlib import Path
@@ -48,8 +47,7 @@ class CurrencyScrapper:
                 pickle.dump(data_, f)
 
     def get_currencies(self):
-        path = Path(self.FILE)
-        if path.exists():
+        if Path(self.FILE).exists():
             return self.read_data()
         else:
             values = self._get_values()
@@ -62,4 +60,3 @@ if __name__ == "__main__":
     data = cp.get_currencies()
     from pprint import pprint
     pprint(data)
-
